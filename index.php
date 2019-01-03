@@ -9,3 +9,5 @@ $dotenv = new Dotenv\Dotenv(__DIR__);
 $dotenv->load();
 
 $synchronizer = new Synchronizer();
+
+$synchronizer->run();
