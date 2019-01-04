@@ -24,16 +24,15 @@ class SampleTypeSynchronizer extends TableSynchronizer
             foreach ($records as $record) {
                 $targetRecord = $this->findRecordInTargetDB($record['s_sampletypeid']);
                 if ($targetRecord) {
-                    // $this->updateRecordInTargetDB($targetRecord, $record);
+                    $this->updateRecordInTargetDB($targetRecord, $record);
                     $targetRecordsToKeep[] = $record['s_sampletypeid'];
                 }
                 else {
                     // $this->insertRecordInTargetDB($record);
                 }
-                print_r($targetRecord);
             }
 
-            // $this->deleteRecordsInTargetDBExcept($targetRecordsToKeep);
+            $this->deleteRecordsInTargetDBExcept($targetRecordsToKeep);
 
         } catch(Exception $e) {
             Logger::logError("Can't read data from table '$this->sourceTable'");
@@ -52,25 +51,16 @@ class SampleTypeSynchronizer extends TableSynchronizer
 
     private function deleteRecordsInTargetDBExcept(array $recordIds)
     {
-        $queryExcept = '';
-        if (count($recordIds) > 0) {
-            $in = str_repeat('?,', max(1, count($recordIds))  - 1) . '?';
-            $queryExcept = "where lims_id NOT IN ($in)";
-        }
-        $queryString = "UPDATE $this->targetTable set deleted_at = NOW() $queryExcept";
-        $query = $this->targetDB->prepare($queryString); 
-        $query->execute($recordIds);
+        $this->targetRepository->deleteAllExcept($recordIds, 'lims_id');
     }
 
     private function updateRecordInTargetDB($targetRecord, $sourceRecord)
     {
-        $queryString = "UPDATE $this->targetTable set name = :name, updated_at = :updated_at where id = " . $targetRecord['id'];
-        $query = $this->targetDB->prepare($queryString); 
-        $now = Carbon::now()->format('Y-m-d H:i:s');
-        $query->execute([
-            ':name' => $sourceRecord['sampletypedesc'],
-            ':updated_at' => $now
-        ]);
+        $columns = [
+            'name' => $sourceRecord['sampletypedesc']
+        ];
+
+        $this->targetRepository->update($targetRecord['id'], $columns);
     }
 
     private function insertRecordInTargetDB($record)

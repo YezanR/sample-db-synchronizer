@@ -36,4 +36,9 @@ class SourceDBRepository extends GenericSourceDBRepository
     {
 
     }
+
+    public function update($id, array $columns, string $idColumnName = 'id')
+    {
+        
+    }
 }
