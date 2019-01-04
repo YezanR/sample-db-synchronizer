@@ -89,9 +89,13 @@ class SampleTypeSynchronizer extends TableSynchronizer
 
     private function updateRecordInTargetDB($targetRecord, $sourceRecord)
     {
-        $queryString = "UPDATE $this->targetTable set name = :name where id = " . $targetRecord['id'];
+        $queryString = "UPDATE $this->targetTable set name = :name, updated_at = :updated_at where id = " . $targetRecord['id'];
         $query = $this->targetDB->prepare($queryString); 
-        $query->execute([':name' => $sourceRecord['sampletypedesc']]);
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+        $query->execute([
+            ':name' => $sourceRecord['sampletypedesc'],
+            ':updated_at' => $now
+        ]);
     }
 
     private function insertRecordInTargetDB($record)
