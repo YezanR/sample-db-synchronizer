@@ -6,14 +6,14 @@ use App\Logger;
 use Carbon\Carbon;
 use App\Repositories\SampleType\SourceDBRepository;
 use App\Repositories\SampleType\TargetDBRepository;
-
+use App\Repositories\Repository;
 
 class SampleTypeSynchronizer extends TableSynchronizer
 {
-    public function __construct()
+    public function __construct(Repository $sourceRepository, Repository $targetRepository)
     {
-        $this->sourceRepository = new SourceDBRepository();
-        $this->targetRepository = new TargetDBRepository();
+        $this->sourceRepository = $sourceRepository;
+        $this->targetRepository = $targetRepository;
     }
 
     public function sync()
