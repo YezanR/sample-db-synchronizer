@@ -4,8 +4,8 @@ namespace App;
 
 use PDO;
 use App\Synchronizers\SampleTypeSynchronizer;
-use App\Repositories\SampleType\SourceDBRepository as SampleTypeSourceDBRepository;
-use App\Repositories\SampleType\TargetDBRepository as SampleTypeTargetDBRepository;
+use App\Repositories\SampleType\SourceDBRepository as SampleTypeSourceRepository;
+use App\Repositories\SampleType\TargetDBRepository as SampleTypeTargetRepository;
 
 class Synchronizer
 {
@@ -13,7 +13,7 @@ class Synchronizer
 
     public function __construct()
     {
-        $this->tableSynchronizers[] = new SampleTypeSynchronizer(new SampleTypeSourceDBRepository(), new SampleTypeTargetDBRepository());
+        $this->tableSynchronizers[] = new SampleTypeSynchronizer(new SampleTypeSourceRepository(), new SampleTypeTargetRepository());
     }
 
     public function run()

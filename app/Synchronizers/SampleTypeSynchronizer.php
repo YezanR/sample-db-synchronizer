@@ -25,11 +25,11 @@ class SampleTypeSynchronizer extends TableSynchronizer
                 $targetRecord = $this->findRecordInTargetDB($record['s_sampletypeid']);
                 if ($targetRecord) {
                     $this->updateRecordInTargetDB($targetRecord, $record);
-                    $targetRecordsToKeep[] = $record['s_sampletypeid'];
                 }
                 else {
                     $this->insertRecordInTargetDB($record);
                 }
+                $targetRecordsToKeep[] = $record['s_sampletypeid'];
             }
 
             $this->deleteRecordsInTargetDBExcept($targetRecordsToKeep);

@@ -21,7 +21,7 @@ class TargetDBRepository extends GenericTargetDBRepository
     
     public function find($id, string $idColumnName = 'id')
     {
-        $queryString = "SELECT * from $this->tableFullName where $idColumnName = '$id'";
+        $queryString = "SELECT * from $this->tableFullName where $idColumnName = '$id' AND deleted_at IS NULL";
 
         $query = $this->db->query($queryString); 
         if (!$query) {
@@ -62,7 +62,7 @@ class TargetDBRepository extends GenericTargetDBRepository
         $now = Carbon::now()->format('Y-m-d H:i:s');
         $query->execute([
             ':lims_id' => $columns['lims_id'], 
-            ':name' => $column['name'],
+            ':name' => $columns['name'],
             ':created_at' => $now,
             ':updated_at' => $now,
         ]);
