@@ -54,4 +54,17 @@ class TargetDBRepository extends GenericTargetDBRepository
             ':updated_at' => $now
         ]);
     }
+
+    public function create(array $columns)
+    {
+        $queryString = "INSERT INTO $this->tableFullName (lims_id, name, created_at, updated_at) VALUES (:lims_id, :name, :created_at, :updated_at)";
+        $query = $this->db->prepare($queryString);
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+        $query->execute([
+            ':lims_id' => $columns['lims_id'], 
+            ':name' => $column['name'],
+            ':created_at' => $now,
+            ':updated_at' => $now,
+        ]);
+    }
 }

@@ -28,7 +28,7 @@ class SampleTypeSynchronizer extends TableSynchronizer
                     $targetRecordsToKeep[] = $record['s_sampletypeid'];
                 }
                 else {
-                    // $this->insertRecordInTargetDB($record);
+                    $this->insertRecordInTargetDB($record);
                 }
             }
 
@@ -65,15 +65,11 @@ class SampleTypeSynchronizer extends TableSynchronizer
 
     private function insertRecordInTargetDB($record)
     {
-        $queryString = "INSERT INTO $this->targetTable (lims_id, name, created_at, updated_at) VALUES (:lims_id, :name, :created_at, :updated_at)";
-        $query = $this->targetDB->prepare($queryString);
-        $now = Carbon::now()->format('Y-m-d H:i:s');
-        $query->execute([
-            ':lims_id' => $record['s_sampletypeid'], 
-            ':name' => $record['sampletypedesc'],
-            ':created_at' => $now,
-            ':updated_at' => $now,
-        ]);
-        
+        $columns = [
+            'lims_id' => $record['s_sampletypeid'], 
+            'name' => $record['sampletypedesc'],
+        ];
+
+        $this->targetRepository->create($columns);
     }
 }

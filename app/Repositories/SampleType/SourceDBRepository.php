@@ -41,4 +41,9 @@ class SourceDBRepository extends GenericSourceDBRepository
     {
         
     }
+
+    public function create(array $columns)
+    {
+        
+    }
 }
