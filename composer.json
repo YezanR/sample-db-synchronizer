@@ -2,7 +2,8 @@
     "name": "flashlab-dashboard/synchronizer",
     "require": {
         "php": ">=7.0.0",
-        "vlucas/phpdotenv": "^2.5"
+        "vlucas/phpdotenv": "^2.5",
+        "nesbot/carbon": "^1.36"
     },
     "autoload": {
         "psr-4": {

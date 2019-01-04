@@ -5,6 +5,8 @@ namespace App\Synchronizers;
 use App\Connectors\DBSourceConnector;
 use App\Connectors\DBTargetConnector;
 use App\Logger;
+use App\Utils\ArrayUtils;
+use Carbon\Carbon;
 
 
 class SampleTypeSynchronizer extends TableSynchronizer
@@ -21,14 +23,26 @@ class SampleTypeSynchronizer extends TableSynchronizer
     }
 
     public function sync()
-    {
-        $this->connectToSource();
-        
+    {   
         try {
-            $data = $this->readData();
-            print_r($data);
+            $records = $this->readData();
+            $targetRecordsToKeep = [];
+            foreach ($records as $record) {
+                $targetRecord = $this->findRecordInTargetDB($record['s_sampletypeid']);
+                if ($targetRecord) {
+                    $this->updateRecordInTargetDB($targetRecord, $record);
+
+                    $targetRecordsToKeep[] = $record['s_sampletypeid'];
+                }
+                else {
+                    $this->insertRecordInTargetDB($record);
+                }
+            }
+
+            $this->deleteRecordsInTargetDBExcept($targetRecordsToKeep);
+
         } catch(Exception $e) {
-            Logger::logError("Can't read data from table $this->sourceTable");
+            Logger::logError("Can't read data from table '$this->sourceTable'");
         }
     }
 
@@ -42,10 +56,55 @@ class SampleTypeSynchronizer extends TableSynchronizer
             Logger::logError($this->sourceDB->errorInfo()[2]);
         }
         
-        while ($row = $query->fetch()) {
-            $data[] = $row;
+        while ($record = $query->fetch()) {
+            $data[] = $record;
         }
 
         return $data;
+    }
+
+    private function findRecordInTargetDB($recordId)
+    {
+        $queryString = "SELECT * from $this->targetTable where lims_id = '$recordId'";
+
+        $query = $this->targetDB->query($queryString); 
+        if (!$query) {
+            Logger::logError($this->targetDB->errorInfo()[2]);
+        }
+
+        return $query->fetch();
+    }
+
+    private function deleteRecordsInTargetDBExcept(array $recordIds)
+    {
+        $queryExcept = '';
+        if (count($recordIds) > 0) {
+            $in = str_repeat('?,', max(1, count($recordIds))  - 1) . '?';
+            $queryExcept = "where lims_id NOT IN ($in)";
+        }
+        $queryString = "UPDATE $this->targetTable set deleted_at = NOW() $queryExcept";
+        $query = $this->targetDB->prepare($queryString); 
+        $query->execute($recordIds);
+    }
+
+    private function updateRecordInTargetDB($targetRecord, $sourceRecord)
+    {
+        $queryString = "UPDATE $this->targetTable set name = :name where id = " . $targetRecord['id'];
+        $query = $this->targetDB->prepare($queryString); 
+        $query->execute([':name' => $sourceRecord['sampletypedesc']]);
+    }
+
+    private function insertRecordInTargetDB($record)
+    {
+        $queryString = "INSERT INTO $this->targetTable (lims_id, name, created_at, updated_at) VALUES (:lims_id, :name, :created_at, :updated_at)";
+        $query = $this->targetDB->prepare($queryString);
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+        $query->execute([
+            ':lims_id' => $record['s_sampletypeid'], 
+            ':name' => 'sampletypedesc',
+            ':created_at' => $now,
+            ':updated_at' => $now,
+        ]);
+        
     }
 }

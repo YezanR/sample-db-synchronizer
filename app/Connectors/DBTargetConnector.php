@@ -3,14 +3,10 @@
 namespace App\Connectors;
 
 use PDO;
+use App\Logger;
 
 class DBTargetConnector
 {
-    public function __construct()
-    {
-        $this->logger = new Logger();
-    }
-    
     public function connect()
     {
         try {

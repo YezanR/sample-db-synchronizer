@@ -9,9 +9,9 @@ use App\Connectors\DBTargetConnector;
 abstract class TableSynchronizer
 {
     protected $sourceTable;
-    protected $sourceTablePrefix;
+    protected $sourceTablePrefix = '';
     protected $targetTable;
-    protected $targetTablePrefix;
+    protected $targetTablePrefix = '';
 
     protected $sourceDB;
 
@@ -19,20 +19,32 @@ abstract class TableSynchronizer
 
     public function __construct()
     {
-        $this->sourceTablePrefix = getenv('SOURCE_DB_TABLEPREFIX') . ".";
-        $this->targetTablePrefix = getenv('TARGET_DB_TABLE_PREFIX') . ".";
+        $sourceTablePrefix = getenv('SOURCE_DB_TABLEPREFIX');
+        if ($sourceTablePrefix) {
+            $this->sourceTablePrefix = $sourceTablePrefix . ".";
+        }
+        $targetTablePrefix = getenv('TARGET_DB_TABLE_PREFIX');
+        if ($targetTablePrefix) {
+            $this->targetTablePrefix = $targetTablePrefix . ".";
+        }
+        $this->connectToSource();
+        $this->connectToTarget();
     }
 
     protected function connectToSource()
     {
-        $connector = new DBSourceConnector();
-        $this->sourceDB = $connector->connect();
+        if (!$this->sourceDB) {
+            $connector = new DBSourceConnector();
+            $this->sourceDB = $connector->connect();
+        }
     }
 
     protected function connectToTarget()
     {
-        $connector = new DBTargetConnector();
-        $this->targetDB = $connector->connect();
+        if (!$this->targetDB) {
+            $connector = new DBTargetConnector();
+            $this->targetDB = $connector->connect();
+        }
     }
 
     abstract public function sync();
