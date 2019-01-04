@@ -101,7 +101,7 @@ class SampleTypeSynchronizer extends TableSynchronizer
         $now = Carbon::now()->format('Y-m-d H:i:s');
         $query->execute([
             ':lims_id' => $record['s_sampletypeid'], 
-            ':name' => 'sampletypedesc',
+            ':name' => $record['sampletypedesc'],
             ':created_at' => $now,
             ':updated_at' => $now,
         ]);
