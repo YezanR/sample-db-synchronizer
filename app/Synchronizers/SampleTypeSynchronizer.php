@@ -2,24 +2,18 @@
 
 namespace App\Synchronizers;
 
-use App\Connectors\DBSourceConnector;
-use App\Connectors\DBTargetConnector;
 use App\Logger;
-use App\Utils\ArrayUtils;
 use Carbon\Carbon;
+use App\Repositories\SampleType\SourceDBRepository;
+use App\Repositories\SampleType\TargetDBRepository;
 
 
 class SampleTypeSynchronizer extends TableSynchronizer
 {
-    protected $sourceTable = 's_sampletype';
-    protected $targetTable = 'sample_types';
-
     public function __construct()
     {
-        parent::__construct();
-
-        $this->sourceTable = $this->sourceTablePrefix . $this->sourceTable;
-        $this->targetTable = $this->targetTablePrefix . $this->targetTable;
+        $this->sourceRepository = new SourceDBRepository();
+        $this->targetRepository = new TargetDBRepository();
     }
 
     public function sync()
@@ -30,16 +24,16 @@ class SampleTypeSynchronizer extends TableSynchronizer
             foreach ($records as $record) {
                 $targetRecord = $this->findRecordInTargetDB($record['s_sampletypeid']);
                 if ($targetRecord) {
-                    $this->updateRecordInTargetDB($targetRecord, $record);
-
+                    // $this->updateRecordInTargetDB($targetRecord, $record);
                     $targetRecordsToKeep[] = $record['s_sampletypeid'];
                 }
                 else {
-                    $this->insertRecordInTargetDB($record);
+                    // $this->insertRecordInTargetDB($record);
                 }
+                print_r($targetRecord);
             }
 
-            $this->deleteRecordsInTargetDBExcept($targetRecordsToKeep);
+            // $this->deleteRecordsInTargetDBExcept($targetRecordsToKeep);
 
         } catch(Exception $e) {
             Logger::logError("Can't read data from table '$this->sourceTable'");
@@ -48,31 +42,12 @@ class SampleTypeSynchronizer extends TableSynchronizer
 
     private function readData()
     {
-        $data = [];
-
-        $queryString = "SELECT s_sampletypeid, sampletypedesc from $this->sourceTable"; 
-        $query = $this->sourceDB->query($queryString); 
-        if (!$query) {
-            Logger::logError($this->sourceDB->errorInfo()[2]);
-        }
-        
-        while ($record = $query->fetch()) {
-            $data[] = $record;
-        }
-
-        return $data;
+        return $this->sourceRepository->all();
     }
 
     private function findRecordInTargetDB($recordId)
     {
-        $queryString = "SELECT * from $this->targetTable where lims_id = '$recordId'";
-
-        $query = $this->targetDB->query($queryString); 
-        if (!$query) {
-            Logger::logError($this->targetDB->errorInfo()[2]);
-        }
-
-        return $query->fetch();
+        return $this->targetRepository->find($recordId, 'lims_id');
     }
 
     private function deleteRecordsInTargetDBExcept(array $recordIds)
