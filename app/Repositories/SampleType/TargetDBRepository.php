@@ -66,5 +66,7 @@ class TargetDBRepository extends GenericTargetDBRepository
             ':created_at' => $now,
             ':updated_at' => $now,
         ]);
+        
+        return $query->fetchObject();
     }
 }
